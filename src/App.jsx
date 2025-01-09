@@ -21,15 +21,17 @@ function App() {
   };
 
   const handleEventSave = () => {
-    if (!selectedDay || isPastDate(selectedDay)) return; // Don't allow saving events for past dates
+    if (!selectedDay || isPastDate(selectedDay)) return;
 
     const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${selectedDay}`;
     setEvents((prev) => {
       const updatedEvents = { ...prev };
+      if (!updatedEvents[dateKey]) updatedEvents[dateKey] = [];
+
       if (editingEventIndex !== null) {
         updatedEvents[dateKey][editingEventIndex] = newEvent;
       } else {
-        updatedEvents[dateKey] = [...(updatedEvents[dateKey] || []), newEvent];
+        updatedEvents[dateKey] = [...updatedEvents[dateKey], newEvent];
       }
       return updatedEvents;
     });
@@ -46,8 +48,11 @@ function App() {
 
   const handleEditEventClick = (eventIndex) => {
     const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${selectedDay}`;
-    setNewEvent(events[dateKey][eventIndex]);
-    setEditingEventIndex(eventIndex);
+    if (events[dateKey] && events[dateKey][eventIndex]) {
+      setNewEvent(events[dateKey][eventIndex]);
+      setEditingEventIndex(eventIndex);
+      setModalVisible(true);
+    }
   };
 
   const handleDeleteEvent = (eventIndex) => {
@@ -66,7 +71,7 @@ function App() {
       currentDate.getMonth(),
       day
     );
-    return selectedDate < new Date(); // Compare with current date
+    return selectedDate < new Date();
   };
 
   const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
@@ -79,7 +84,7 @@ function App() {
 
     const calendar = [];
     for (let i = 0; i < firstDayOfMonth; i++) {
-      calendar.push(null); // Empty cells for alignment
+      calendar.push(null);
     }
     for (let day = 1; day <= totalDays; day++) {
       calendar.push(day);
@@ -94,7 +99,7 @@ function App() {
       newDate.setMonth(newDate.getMonth() + direction);
       return newDate;
     });
-    setSelectedDay(null); // Clear selection when switching months
+    setSelectedDay(null);
   };
 
   const monthNames = [
@@ -127,7 +132,6 @@ function App() {
       </header>
 
       <div className="flex flex-1 gap-8 p-6">
-        {/* Calendar Section */}
         <div className="bg-white shadow-xl rounded-xl p-8 w-2/3">
           <div className="flex justify-between items-center mb-6">
             <button
@@ -176,7 +180,6 @@ function App() {
           </div>
         </div>
 
-        {/* Side Panel Section */}
         <div
           className={`w-1/3 bg-white p-6 shadow-xl h-full transform transition-transform ease-in-out lg:translate-x-0 ${
             sidePanelVisible ? "translate-x-0" : "translate-x-full"
